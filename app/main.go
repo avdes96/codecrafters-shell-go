@@ -4,12 +4,17 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
+
+	"github.com/codecrafters-io/shell-starter-go/app/builtin"
 )
 
 
 func main() {
+	builtins := map[string]builtin.Builtin{}
+	builtins["exit"] = builtin.Exit{}
+	builtins["echo"] = builtin.Echo{}
+		
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 		userInput, err := bufio.NewReader(os.Stdin).ReadString('\n')
@@ -25,18 +30,9 @@ func main() {
 		if len(userInputSplit) > 1 {
 			args = userInputSplit[1:]
 		}
-		
-		switch command {
-		case "exit":
-			exitCode, err := strconv.Atoi(args[0])
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s is an invalid exit code: %s", args[1], err)
-				os.Exit(1)
-			}
-			os.Exit(exitCode)
-		case "echo":
-			fmt.Println(strings.Join(args, " "))
-		default: 
+		if b, ok := builtins[command]; ok {
+			b.Run(args)
+		} else {
 			fmt.Println(command + ": command not found")
 		}
 	}
