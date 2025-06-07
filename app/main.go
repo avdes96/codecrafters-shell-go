@@ -14,6 +14,7 @@ func main() {
 	builtins := map[string]builtin.Builtin{}
 	builtins["exit"] = builtin.Exit{}
 	builtins["echo"] = builtin.Echo{}
+	builtins["type"] = builtin.Type{Builtins: &builtins}
 		
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
