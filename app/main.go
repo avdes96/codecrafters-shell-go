@@ -19,7 +19,7 @@ func main() {
 			os.Exit(1)
 		}
 		userInput = userInput[:len(userInput)-1]
-		userInputSplit := strings.Fields(userInput)
+		userInputSplit := strings.Split(userInput, " ")
 		command := userInputSplit[0]
 		args := []string{}
 		if len(userInputSplit) > 1 {
@@ -34,6 +34,8 @@ func main() {
 				os.Exit(1)
 			}
 			os.Exit(exitCode)
+		case "echo":
+			fmt.Println(strings.Join(args, " "))
 		default: 
 			fmt.Println(command + ": command not found")
 		}
