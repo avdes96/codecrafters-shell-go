@@ -33,13 +33,13 @@ func main() {
 			log.Fatalf("Error whilst reading user input: %v", err)
 		}
 		userInput = userInput[:len(userInput)-1]
-		userInputSplit := strings.Split(userInput, " ")
+		userInputSplit := strings.SplitN(userInput, " ", 2)
 		command := userInputSplit[0]
-		args := []string{}
+		argsStr := ""
 		if len(userInputSplit) > 1 {
-			args = userInputSplit[1:]
+			argsStr = userInputSplit[1]
 		}
-
+		args := utils.ParseArgs(argsStr)
 		if b, ok := builtins[command]; ok {
 			b.Run(args)
 		} else if path := utils.FindExecutablePath(command); path != "" {
