@@ -1,7 +1,7 @@
 package builtin
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"strconv"
 )
@@ -15,8 +15,7 @@ func (e Exit) Run(args []string) {
 	} else {
 		exitCodeInt, err := strconv.Atoi(args[0])
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s is an invalid exit code: %s", args[1], err)
-			os.Exit(1)
+			log.Fatalf("%s is an invalid exit code: %s", args[1], err)
 		}
 		exitCode = exitCodeInt
 	}

@@ -3,14 +3,19 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
 	"github.com/codecrafters-io/shell-starter-go/app/builtin"
+	"github.com/codecrafters-io/shell-starter-go/app/logger"
 )
 
 
+
 func main() {
+	logger.InitLogger()
+
 	builtins := map[string]builtin.Builtin{}
 	builtins["exit"] = builtin.Exit{}
 	builtins["echo"] = builtin.Echo{}
@@ -21,8 +26,7 @@ func main() {
 		userInput, err := bufio.NewReader(os.Stdin).ReadString('\n')
 		
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error whilst reading user input: %s", err)
-			os.Exit(1)
+			log.Fatalf("Error whilst reading user input: %s", err)
 		}
 		userInput = userInput[:len(userInput)-1]
 		userInputSplit := strings.Split(userInput, " ")

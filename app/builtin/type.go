@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 )
@@ -36,6 +37,7 @@ func (t Type) isExecutable (command string) (bool, string) {
 	for _, dir := range dirs {
 		files, err := os.ReadDir(dir)
 		if err != nil {
+			log.Printf("Unable to open directory %s: %s", dir, err)
 			continue
 		}
 		for _, file := range files {
