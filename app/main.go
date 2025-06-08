@@ -23,6 +23,7 @@ func main() {
 	builtins["echo"] = builtin.Echo{}
 	builtins["type"] = builtin.Type{Builtins: &builtins}
 	builtins["pwd"] = builtin.Pwd{}
+	builtins["cd"] = builtin.Cd{}
 		
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
