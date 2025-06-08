@@ -2,9 +2,7 @@ package builtin
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"strings"
+	"os/exec"
 )
 
 
@@ -32,20 +30,9 @@ func (t Type) isBuiltIn(command string) bool {
 }
 
 func (t Type) isExecutable (command string) (bool, string) {
-	path := os.Getenv("PATH")
-	dirs := strings.Split(path, string(os.PathListSeparator))
-	for _, dir := range dirs {
-		files, err := os.ReadDir(dir)
-		if err != nil {
-			log.Printf("Unable to open directory %s: %s", dir, err)
-			continue
-		}
-		for _, file := range files {
-			if file.Name() == command {
-				return true, dir + string(os.PathSeparator) + file.Name()
-			}
-		}
+	path, err := exec.LookPath(command)
+	if err != nil {
+		return false, ""
 	}
-
-	return false, ""
+	return true, path
 }
