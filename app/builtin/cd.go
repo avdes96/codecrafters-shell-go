@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"log"
 	"os"
+	"strings"
 )
 
 type Cd struct{}
@@ -16,6 +17,13 @@ func (c Cd) Run(args []string) {
 		return
 	}
 	newDir := args[0]
+	if newDir == "~" || strings.HasPrefix(newDir, "~" + string(os.PathSeparator)) {
+		userHomeDir, err := os.UserHomeDir()
+		if err != nil {
+			log.Fatalf("Unable to find user home dir: %v", err)
+		}
+		newDir = strings.Replace(newDir, "~", userHomeDir, 1)
+	}
 	err := os.Chdir(newDir)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
