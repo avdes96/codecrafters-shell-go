@@ -8,7 +8,9 @@ import (
 	"strings"
 
 	"github.com/codecrafters-io/shell-starter-go/app/builtin"
+	"github.com/codecrafters-io/shell-starter-go/app/executable"
 	"github.com/codecrafters-io/shell-starter-go/app/logger"
+	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
 
 
@@ -26,7 +28,7 @@ func main() {
 		userInput, err := bufio.NewReader(os.Stdin).ReadString('\n')
 		
 		if err != nil {
-			log.Fatalf("Error whilst reading user input: %s", err)
+			log.Fatalf("Error whilst reading user input: %v", err)
 		}
 		userInput = userInput[:len(userInput)-1]
 		userInputSplit := strings.Split(userInput, " ")
@@ -35,8 +37,11 @@ func main() {
 		if len(userInputSplit) > 1 {
 			args = userInputSplit[1:]
 		}
+
 		if b, ok := builtins[command]; ok {
 			b.Run(args)
+		} else if path := utils.FindExecutablePath(command); path != "" {
+			executable.RunExecutable(command, args)
 		} else {
 			fmt.Println(command + ": command not found")
 		}

@@ -15,7 +15,7 @@ func (e Exit) Run(args []string) {
 	} else {
 		exitCodeInt, err := strconv.Atoi(args[0])
 		if err != nil {
-			log.Fatalf("%s is an invalid exit code: %s", args[1], err)
+			log.Fatalf("%s is an invalid exit code: %v", args[1], err)
 		}
 		exitCode = exitCodeInt
 	}
