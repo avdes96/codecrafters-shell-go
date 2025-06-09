@@ -24,8 +24,14 @@ func ParseArgs(s string) []string {
 	output := []string{}
 	status := NOT_IN_QUOTE
 	buffer := ""
+	ignore := false
 	for _, c := range s {
-		if c == '\'' {
+		if ignore {
+			buffer += string(c)
+			ignore = false
+		} else if c == '\\' && status == NOT_IN_QUOTE {
+			ignore = true
+		} else if c == '\'' {
 			switch status {
 			case NOT_IN_QUOTE:
 				status = IN_SINGLE_QUOTE
