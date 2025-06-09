@@ -24,13 +24,11 @@ func ParseArgs(s string) []string {
 	output := []string{}
 	status := NOT_IN_QUOTE
 	buffer := ""
-	ignore := false
-	for _, c := range s {
-		if ignore {
+	print := false
+	for i, c := range s {
+		if print {
 			buffer += string(c)
-			ignore = false
-		} else if c == '\\' && status == NOT_IN_QUOTE {
-			ignore = true
+			print = false
 		} else if c == '\'' {
 			switch status {
 			case NOT_IN_QUOTE:
@@ -49,6 +47,18 @@ func ParseArgs(s string) []string {
 			case IN_SINGLE_QUOTE:
 				buffer += string(c)
 			}
+		} else if status == IN_SINGLE_QUOTE {
+			buffer += string(c)
+		} else if c == '\\' {
+			if status == NOT_IN_QUOTE {
+				print = true
+			} else {
+				if next, ok := peek(s, i); !ok || !isPrintableChar(next) {
+					buffer += string(c)
+				} else {
+					print = true
+				}
+			}
 		} else if unicode.IsSpace(c) && status == NOT_IN_QUOTE {
 			if buffer != "" {
 				output = append(output, buffer)
@@ -64,4 +74,15 @@ func ParseArgs(s string) []string {
 	}
 		
 	return output
+}
+
+func peek(s string, i int) (rune, bool) {
+	if i >= len(s) - 1 {
+		return 0, false
+	}
+	return rune(s[i+1]), true
+}
+
+func isPrintableChar(c rune) bool {
+	return c == '\\' || c == '\n' || c == '$' || c == '"'
 }
