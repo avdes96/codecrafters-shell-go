@@ -20,7 +20,7 @@ const (
 )
 
 
-func ParseArgs(s string) []string {
+func ParseString(s string) []string {
 	output := []string{}
 	status := NOT_IN_QUOTE
 	buffer := ""

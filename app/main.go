@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/codecrafters-io/shell-starter-go/app/builtin"
 	"github.com/codecrafters-io/shell-starter-go/app/executable"
@@ -33,13 +32,12 @@ func main() {
 			log.Fatalf("Error whilst reading user input: %v", err)
 		}
 		userInput = userInput[:len(userInput)-1]
-		userInputSplit := strings.SplitN(userInput, " ", 2)
+		userInputSplit := utils.ParseString(userInput)
 		command := userInputSplit[0]
-		argsStr := ""
+		args := []string{}
 		if len(userInputSplit) > 1 {
-			argsStr = userInputSplit[1]
+			args = userInputSplit[1:]
 		}
-		args := utils.ParseArgs(argsStr)
 		if b, ok := builtins[command]; ok {
 			b.Run(args)
 		} else if path := utils.FindExecutablePath(command); path != "" {
