@@ -118,6 +118,11 @@ func ParseArgs(args []string) ([]string, ShellConfig) {
 				stdErrFile = getOSFile(args[i+1], true)
 			}
 			i += 2
+		case "2>>":
+			if i < len(args) - 1 {
+				stdErrFile = getOSFile(args[i+1], false)
+			}
+			i += 2
 		default:
 			newArgs = append(newArgs, arg)
 			i += 1
