@@ -12,8 +12,6 @@ import (
 	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
 
-
-
 func main() {
 	logger.InitLogger()
 
@@ -23,7 +21,9 @@ func main() {
 	builtins["type"] = builtin.Type{Builtins: &builtins}
 	builtins["pwd"] = builtin.Pwd{}
 	builtins["cd"] = builtin.Cd{}
-		
+	
+	var config utils.ShellConfig
+
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 		userInput, err := bufio.NewReader(os.Stdin).ReadString('\n')
@@ -38,10 +38,11 @@ func main() {
 		if len(userInputSplit) > 1 {
 			args = userInputSplit[1:]
 		}
+		args, config = utils.ParseArgs(args)
 		if b, ok := builtins[command]; ok {
-			b.Run(args)
+			b.Run(args, config)
 		} else if path := utils.FindExecutablePath(command); path != "" {
-			executable.RunExecutable(command, args)
+			executable.RunExecutable(command, config, args)
 		} else {
 			fmt.Println(command + ": command not found")
 		}

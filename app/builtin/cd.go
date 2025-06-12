@@ -7,11 +7,13 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
 
 type Cd struct{}
 
-func (c Cd) Run(args []string) {
+func (c Cd) Run(args []string, config utils.ShellConfig) {
 	if len(args) != 1 {
 		fmt.Println("Usage: cd <dir>")
 		return

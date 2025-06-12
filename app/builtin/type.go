@@ -11,7 +11,7 @@ type Type struct {
 	Builtins *map[string]Builtin
 }
 
-func (t Type) Run(args []string) {
+func (t Type) Run(args []string, config utils.ShellConfig) {
 	command := args[0]
 	if t.isBuiltin(command) {
 		fmt.Println(command + " is a shell builtin")

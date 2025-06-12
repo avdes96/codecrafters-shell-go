@@ -1,9 +1,15 @@
 package utils
 
 import (
+	"log"
+	"os"
 	"os/exec"
 	"unicode"
 )
+
+type ShellConfig struct {
+	StdOutFile *os.File
+}
 
 func FindExecutablePath(executable string) string {
 	path, err := exec.LookPath(executable)
@@ -85,4 +91,29 @@ func peek(s string, i int) (rune, bool) {
 
 func isPrintableChar(c rune) bool {
 	return c == '\\' || c == '\n' || c == '$' || c == '"'
+}
+
+func ParseArgs(args []string) ([]string, ShellConfig) {
+	stdOutfile := os.Stdout
+	newArgs := []string{}
+	i := 0
+	for i < len(args) {
+		arg := args[i]
+
+		switch arg {
+		case ">", "1>":
+			if i < len(args) - 1 {
+				newFile, err := os.Create(args[i+1])
+				if err != nil {
+					log.Fatalf("Error creating file: %v", err)
+				}
+				stdOutfile = newFile
+			}
+			i += 2
+		default:
+			newArgs = append(newArgs, arg)
+			i += 1
+		}
+	}
+	return newArgs, ShellConfig{StdOutFile: stdOutfile}
 }
