@@ -105,12 +105,17 @@ func ParseArgs(args []string) ([]string, ShellConfig) {
 		switch arg {
 		case ">", "1>":
 			if i < len(args) - 1 {
-				stdOutFile = createFile(args[i+1])
+				stdOutFile = getOSFile(args[i+1], true)
+			}
+			i += 2
+		case ">>", "1>>":
+			if i < len(args) - 1 {
+				stdOutFile = getOSFile(args[i+1], false)
 			}
 			i += 2
 		case "2>":
 			if i < len(args) - 1 {
-				stdErrFile = createFile(args[i+1])
+				stdErrFile = getOSFile(args[i+1], true)
 			}
 			i += 2
 		default:
@@ -121,8 +126,12 @@ func ParseArgs(args []string) ([]string, ShellConfig) {
 	return newArgs, ShellConfig{StdOutFile: stdOutFile, StdErrFile: stdErrFile}
 }
 
-func createFile(filename string) *os.File {
-	file, err := os.Create(filename)
+func getOSFile(filename string, overwrite bool) *os.File {
+	var flags int = os.O_CREATE | os.O_WRONLY
+	if !overwrite {
+		flags |= os.O_APPEND
+	}
+	file, err := os.OpenFile(filename, flags, 0644)
 	if err != nil {
 		log.Fatalf("Error creating file: %v", err)
 	}
