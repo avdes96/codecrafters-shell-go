@@ -9,6 +9,7 @@ import (
 
 type ShellConfig struct {
 	StdOutFile *os.File
+	StdErrFile *os.File
 }
 
 func FindExecutablePath(executable string) string {
@@ -94,7 +95,8 @@ func isPrintableChar(c rune) bool {
 }
 
 func ParseArgs(args []string) ([]string, ShellConfig) {
-	stdOutfile := os.Stdout
+	stdOutFile := os.Stdout
+	stdErrFile := os.Stderr
 	newArgs := []string{}
 	i := 0
 	for i < len(args) {
@@ -103,11 +105,12 @@ func ParseArgs(args []string) ([]string, ShellConfig) {
 		switch arg {
 		case ">", "1>":
 			if i < len(args) - 1 {
-				newFile, err := os.Create(args[i+1])
-				if err != nil {
-					log.Fatalf("Error creating file: %v", err)
-				}
-				stdOutfile = newFile
+				stdOutFile = createFile(args[i+1])
+			}
+			i += 2
+		case "2>":
+			if i < len(args) - 1 {
+				stdErrFile = createFile(args[i+1])
 			}
 			i += 2
 		default:
@@ -115,5 +118,13 @@ func ParseArgs(args []string) ([]string, ShellConfig) {
 			i += 1
 		}
 	}
-	return newArgs, ShellConfig{StdOutFile: stdOutfile}
+	return newArgs, ShellConfig{StdOutFile: stdOutFile, StdErrFile: stdErrFile}
+}
+
+func createFile(filename string) *os.File {
+	file, err := os.Create(filename)
+	if err != nil {
+		log.Fatalf("Error creating file: %v", err)
+	}
+	return file
 }

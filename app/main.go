@@ -44,7 +44,7 @@ func main() {
 		} else if path := utils.FindExecutablePath(command); path != "" {
 			executable.RunExecutable(command, config, args)
 		} else {
-			fmt.Println(command + ": command not found")
+			fmt.Fprint(config.StdErrFile, command + ": command not found\n")
 		}
 	}
 }
