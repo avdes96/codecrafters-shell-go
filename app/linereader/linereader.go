@@ -32,12 +32,12 @@ func (l linereader) ReadLine(initialState string) (string, string, error) {
 		if err != nil {
 			return "", "", err
 		}
-		switch b {
-		case '\n', '\t':
-			return string(b), userInput, nil
+		switch s := string(b); s {
+		case "\n", "\t":
+			return s, userInput, nil
 		default:
-			userInput += string(b)
-			fmt.Fprint(os.Stdout, string(b))
+			userInput += s
+			fmt.Fprint(os.Stdout, s)
 		}
 
 	}

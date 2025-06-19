@@ -33,14 +33,17 @@ func getBuiltins() map[string]builtin.Builtin {
 }
 
 func (s shell) Run() {
-	isNewLine, userInput := true, ""
+	var invoker string
+	var userInput string = ""
+	isNewLine := true
 	reader := linereader.New(bufio.NewReader(os.Stdin))
 	for {
 		if isNewLine {
 			fmt.Fprint(os.Stdout, "$ ")
 			isNewLine = false
 		}
-		invoker, userInput, err := reader.ReadLine(userInput)
+		var err error
+		invoker, userInput, err = reader.ReadLine(userInput)
 		if err != nil {
 			log.Fatalf("Error whilst reading user input: %v", err)
 		}
