@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/codecrafters-io/shell-starter-go/app/builtin"
 	"github.com/codecrafters-io/shell-starter-go/app/executable"
@@ -79,8 +80,11 @@ func (s shell) executeCommand(userInput string) {
 }
 
 func (s shell) autocomplete(userInput string) string {
-	if userInput == "ech" {
-		return "o "
+	for builtin := range s.builtins {
+		if strings.HasPrefix(builtin, userInput) {
+			return strings.TrimPrefix(builtin, userInput) + " "
+		}
 	}
-	return "t "
+	fmt.Fprint(os.Stdout, "\x07")
+	return ""
 }
