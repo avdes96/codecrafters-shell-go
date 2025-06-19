@@ -8,6 +8,7 @@ import (
 
 	"github.com/codecrafters-io/shell-starter-go/app/builtin"
 	"github.com/codecrafters-io/shell-starter-go/app/executable"
+	"github.com/codecrafters-io/shell-starter-go/app/linereader"
 	"github.com/codecrafters-io/shell-starter-go/app/logger"
 	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
@@ -24,27 +25,44 @@ func main() {
 	
 	var config utils.ShellConfig
 
+	isNewLine, initialState := true, ""
+	reader := linereader.New(bufio.NewReader(os.Stdin))
 	for {
-		fmt.Fprint(os.Stdout, "$ ")
-		userInput, err := bufio.NewReader(os.Stdin).ReadString('\n')
-		
-		if err != nil {
-			log.Fatalf("Error whilst reading user input: %v", err)
+		if isNewLine {
+			fmt.Fprint(os.Stdout, "$ ")
+			isNewLine = false
 		}
-		userInput = userInput[:len(userInput)-1]
-		userInputSplit := utils.ParseString(userInput)
-		command := userInputSplit[0]
-		args := []string{}
-		if len(userInputSplit) > 1 {
-			args = userInputSplit[1:]
-		}
-		args, config = utils.ParseArgs(args)
-		if b, ok := builtins[command]; ok {
-			b.Run(args, config)
-		} else if path := utils.FindExecutablePath(command); path != "" {
-			executable.RunExecutable(command, config, args)
-		} else {
-			fmt.Fprint(config.StdErrFile, command + ": command not found\n")
-		}
+
+		invoker, userInput, err := reader.ReadLine(initialState)
+		switch invoker {
+		case "\n":
+			fmt.Fprint(os.Stdout, "\n")
+			if err != nil {
+				log.Fatalf("Error whilst reading user input: %v", err)
+			}
+			userInputSplit := utils.ParseString(userInput)
+			command := userInputSplit[0]
+			args := []string{}
+			if len(userInputSplit) > 1 {
+				args = userInputSplit[1:]
+			}
+			args, config = utils.ParseArgs(args)
+			if b, ok := builtins[command]; ok {
+				b.Run(args, config)
+			} else if path := utils.FindExecutablePath(command); path != "" {
+				executable.RunExecutable(command, config, args)
+			} else {
+				fmt.Fprint(config.StdErrFile, command + ": command not found\n")
+			}
+			isNewLine = true
+		case "\t":
+			var output string
+			if userInput == "ech" {
+				output = "o"
+			} else {
+				output = "t"
+			}
+			fmt.Fprintf(os.Stdout, "%s ", output)
+		}		
 	}
 }
