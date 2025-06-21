@@ -15,11 +15,13 @@ import (
 
 type shell struct {
 	builtins map[string]builtin.Builtin
+	executables []string
 }
 
 func New() shell {
 	return shell{
 		builtins: getBuiltins(),
+		executables: getExecutables(),
 	}
 }
 
@@ -32,6 +34,34 @@ func getBuiltins() map[string]builtin.Builtin {
 	builtins["cd"] = builtin.Cd{}
 	return builtins
 }
+
+func getExecutables() []string {
+	path := os.Getenv("PATH")
+	dirs := strings.Split(path, string(os.PathListSeparator))
+	execs := []string{}
+	for _, dir := range dirs {
+		contents, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+		for _, obj := range contents {
+			if isExec(obj) {
+				execs = append(execs, obj.Name())
+			}
+		}
+	}
+	return execs
+}
+
+func isExec(obj os.DirEntry) bool {
+	info, err := obj.Info()
+	if err != nil {
+		return false
+	}
+	mode := info.Mode()
+	return mode.IsRegular() && mode.Perm()&0111 != 0
+}
+
 
 func (s shell) Run() {
 	var invoker string
@@ -81,10 +111,22 @@ func (s shell) executeCommand(userInput string) {
 
 func (s shell) autocomplete(userInput string) string {
 	for builtin := range s.builtins {
-		if strings.HasPrefix(builtin, userInput) {
-			return strings.TrimPrefix(builtin, userInput) + " "
+		if ok, completionStr := canAutocomplete(builtin, userInput); ok {
+			return completionStr
+		}
+	}
+	for _, exec := range s.executables {
+		if ok, completionStr := canAutocomplete(exec, userInput); ok {
+			return completionStr
 		}
 	}
 	fmt.Fprint(os.Stdout, "\x07")
 	return ""
+}
+
+func canAutocomplete(s string, prefix string) (bool, string) {
+	if strings.HasPrefix(s, prefix) {
+		return true, strings.TrimPrefix(s, prefix) + " "
+	}
+	return false, ""
 }
