@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/codecrafters-io/shell-starter-go/app/builtin"
@@ -16,12 +17,14 @@ import (
 type shell struct {
 	builtins map[string]builtin.Builtin
 	executables []string
+	completionsCache []string
 }
 
 func New() shell {
 	return shell{
 		builtins: getBuiltins(),
 		executables: getExecutables(),
+		completionsCache: []string{},
 	}
 }
 
@@ -82,13 +85,29 @@ func (s shell) Run() {
 		case "\n":
 			s.executeCommand(userInput)
 			isNewLine, userInput = true, ""
+			s.completionsCache = []string{}
+		case "\t\t":
+			if len(s.completionsCache) > 0 {
+				fmt.Fprintf(os.Stdout, "\r\n%s\r\n$ %s", strings.Join(s.completionsCache, "  "), userInput)
+				s.completionsCache = []string{}
+			}
 		case "\t":
-			endOfWord := s.autocomplete(userInput)
-			fmt.Fprint(os.Stdout, endOfWord)
-			userInput += endOfWord
-		}		
+			completions := s.getPossibleAutocompletions(userInput)
+			switch len(completions) {
+			case 0:
+				fmt.Fprint(os.Stdout, "\x07")
+			case 1:
+				end := strings.Trim(completions[0], userInput)
+				fmt.Fprint(os.Stdout, end + " ")
+				userInput += end + " "
+			default:
+				fmt.Fprint(os.Stdout, "\x07")
+				s.completionsCache = completions
+			}
+		}
 	}
 }
+
 
 func (s shell) executeCommand(userInput string) {
 	var config utils.ShellConfig
@@ -109,24 +128,19 @@ func (s shell) executeCommand(userInput string) {
 	}
 }
 
-func (s shell) autocomplete(userInput string) string {
+
+func (s shell) getPossibleAutocompletions(userInput string) []string {
+	completions := []string{}
 	for builtin := range s.builtins {
-		if ok, completionStr := canAutocomplete(builtin, userInput); ok {
-			return completionStr
+		if strings.HasPrefix(builtin, userInput) {
+			completions = append(completions, builtin)
 		}
 	}
 	for _, exec := range s.executables {
-		if ok, completionStr := canAutocomplete(exec, userInput); ok {
-			return completionStr
+		if strings.HasPrefix(exec, userInput) {
+			completions = append(completions, exec)
 		}
 	}
-	fmt.Fprint(os.Stdout, "\x07")
-	return ""
-}
-
-func canAutocomplete(s string, prefix string) (bool, string) {
-	if strings.HasPrefix(s, prefix) {
-		return true, strings.TrimPrefix(s, prefix) + " "
-	}
-	return false, ""
+	slices.Sort(completions)
+	return completions
 }

@@ -26,16 +26,22 @@ func (l linereader) ReadLine(initialState string) (string, string, error) {
 	}
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 	userInput := initialState
-	
+	onlyTab := true
 	for {
 		b, err := l.reader.ReadByte()
 		if err != nil {
 			return "", "", err
 		}
 		switch s := string(b); s {
-		case "\n", "\t":
+		case "\n":
+			return s, userInput, nil
+		case "\t":
+			if onlyTab {
+				return "\t\t", userInput, nil
+			}
 			return s, userInput, nil
 		default:
+			onlyTab = false
 			userInput += s
 			fmt.Fprint(os.Stdout, s)
 		}
