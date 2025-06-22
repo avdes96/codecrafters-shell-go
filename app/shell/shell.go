@@ -36,6 +36,7 @@ func getBuiltins() map[string]builtin.Builtin {
 	builtins["type"] = builtin.Type{Builtins: &builtins}
 	builtins["pwd"] = builtin.Pwd{}
 	builtins["cd"] = builtin.Cd{}
+	builtins["history"] = builtin.History{}
 	return builtins
 }
 
