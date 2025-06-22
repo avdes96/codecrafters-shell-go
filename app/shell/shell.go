@@ -97,12 +97,23 @@ func (s shell) Run() {
 			case 0:
 				fmt.Fprint(os.Stdout, "\x07")
 			case 1:
-				end := strings.Trim(completions[0], userInput)
+				end := strings.TrimPrefix(completions[0], userInput)
 				fmt.Fprint(os.Stdout, end + " ")
 				userInput += end + " "
 			default:
-				fmt.Fprint(os.Stdout, "\x07")
-				s.completionsCache = completions
+				commonPrefix := getCommonPrefix(completions)
+				if commonPrefix == "" {
+					fmt.Fprint(os.Stdout, "\x07")
+				} else {
+					end := strings.TrimPrefix(commonPrefix, userInput)
+					if end == "" {
+						fmt.Fprint(os.Stdout, "\x07")
+					} else {
+						fmt.Fprint(os.Stdout, end)
+						userInput += end
+					}
+					s.completionsCache = completions
+				}
 			}
 		}
 	}
@@ -143,4 +154,20 @@ func (s shell) getPossibleAutocompletions(userInput string) []string {
 	}
 	slices.Sort(completions)
 	return completions
+}
+
+func getCommonPrefix(strings []string) string {
+	prefix := ""
+	n, i := len(strings[0]), 0
+	for i < n {
+		p := strings[0][i]
+		for _, s := range strings[1:] {
+			if s[i] != p {
+				return prefix
+			}
+		}
+		prefix += string(p)
+		i += 1
+	}
+	return prefix
 }
