@@ -127,13 +127,14 @@ func (s *shell) executeCommand(userInput string) {
 	cmds := utils.ParseInput(userInputSplit)
 	var wg sync.WaitGroup
 	for _, cmd := range cmds {
+		wg.Add(1)
 		if b, ok := s.builtins[cmd.Command]; ok {
-			b.Run(&cmd)
+			go b.Run(&cmd, &wg)
 		} else if path := utils.FindExecutablePath(cmd.Command); path != "" {
-			wg.Add(1)
 			go executable.Run(&cmd, &wg)
 		} else {
 			fmt.Fprintf(cmd.StdErrFile, "%s: command not found\n", cmd.Command)
+			wg.Done()
 		}
 	}
 	wg.Wait()
