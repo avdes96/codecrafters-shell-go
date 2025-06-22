@@ -9,6 +9,6 @@ import (
 
 type Echo struct{}
 
-func (e Echo,) Run(args []string, config utils.ShellConfig) {
-	fmt.Fprintln(config.StdOutFile, strings.Join(args, " "))
+func (e Echo) Run(cmd utils.ShellCommand) {
+	fmt.Fprintln(cmd.StdOutFile, strings.Join(cmd.Args, " "))
 }

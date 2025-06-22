@@ -13,12 +13,12 @@ import (
 
 type Cd struct{}
 
-func (c Cd) Run(args []string, config utils.ShellConfig) {
-	if len(args) != 1 {
+func (c Cd) Run(cmd utils.ShellCommand) {
+	if len(cmd.Args) != 1 {
 		fmt.Println("Usage: cd <dir>")
 		return
 	}
-	newDir := args[0]
+	newDir := cmd.Args[0]
 	if newDir == "~" || strings.HasPrefix(newDir, "~" + string(os.PathSeparator)) {
 		userHomeDir, err := os.UserHomeDir()
 		if err != nil {

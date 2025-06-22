@@ -11,8 +11,12 @@ type Type struct {
 	Builtins *map[string]Builtin
 }
 
-func (t Type) Run(args []string, config utils.ShellConfig) {
-	command := args[0]
+func (t Type) Run(cmd utils.ShellCommand) {
+	if len(cmd.Args) == 0 {
+		fmt.Println("Usage: type <cmd>")
+		return
+	}
+	command := cmd.Args[0]
 	if t.isBuiltin(command) {
 		fmt.Println(command + " is a shell builtin")
 	} else if ok, path := t.isExecutable(command); ok {

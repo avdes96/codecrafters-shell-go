@@ -7,11 +7,11 @@ import (
 	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
 
-func RunExecutable(path string, config utils.ShellConfig, args []string) {
-	cmd := exec.Command(path, args...)
-	cmd.Stdout = config.StdOutFile
-	cmd.Stderr = config.StdErrFile
+func Run(s utils.ShellCommand) {
+	cmd := exec.Command(s.Command, s.Args...)
+	cmd.Stdout = s.StdOutFile
+	cmd.Stderr = s.StdErrFile
 	if err := cmd.Run(); err != nil {
-		log.Printf("Error running command %s: %v", path, err)
+		log.Printf("Error running command %s with args %s: %v", s.Command, s.Args, err)
 	}
 }

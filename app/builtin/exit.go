@@ -10,14 +10,14 @@ import (
 
 type Exit struct{}
 
-func (e Exit) Run(args []string, config utils.ShellConfig) {
+func (e Exit) Run(cmd utils.ShellCommand) {
 	var exitCode int
-	if len(args) == 0 {
+	if len(cmd.Args) == 0 {
 		exitCode = 0
 	} else {
-		exitCodeInt, err := strconv.Atoi(args[0])
+		exitCodeInt, err := strconv.Atoi(cmd.Args[0])
 		if err != nil {
-			log.Fatalf("%s is an invalid exit code: %v", args[1], err)
+			log.Fatalf("%s is an invalid exit code: %v", cmd.Args[1], err)
 		}
 		exitCode = exitCodeInt
 	}

@@ -121,21 +121,17 @@ func (s shell) Run() {
 
 
 func (s shell) executeCommand(userInput string) {
-	var config utils.ShellConfig
 	fmt.Fprint(os.Stdout, "\n")
 	userInputSplit := utils.ParseString(userInput)
-	command := userInputSplit[0]
-	args := []string{}
-	if len(userInputSplit) > 1 {
-		args = userInputSplit[1:]
-	}
-	args, config = utils.ParseArgs(args)
-	if b, ok := s.builtins[command]; ok {
-		b.Run(args, config)
-	} else if path := utils.FindExecutablePath(command); path != "" {
-		executable.RunExecutable(command, config, args)
-	} else {
-		fmt.Fprint(config.StdErrFile, command + ": command not found\n")
+	cmds := utils.ParseInput(userInputSplit)
+	for _, cmd := range cmds {
+		if b, ok := s.builtins[cmd.Command]; ok {
+			b.Run(cmd)
+		} else if path := utils.FindExecutablePath(cmd.Command); path != "" {
+			executable.Run(cmd)
+		} else {
+			fmt.Fprintf(cmd.StdErrFile, "%s: command not found\n", cmd.Command)
+		}
 	}
 }
 

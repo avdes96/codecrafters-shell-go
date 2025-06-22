@@ -7,13 +7,30 @@ import (
 	"unicode"
 )
 
-type ShellConfig struct {
+type ShellCommand struct  {
+	Command string
+	Args []string
+	StdInFile *os.File
 	StdOutFile *os.File
 	StdErrFile *os.File
 }
 
-func FindExecutablePath(executable string) string {
-	path, err := exec.LookPath(executable)
+func NewShellCommand() ShellCommand {
+	return ShellCommand{
+		Command: "",
+		Args: []string{},
+		StdInFile: os.Stdin,
+		StdOutFile: os.Stdout,
+		StdErrFile: os.Stderr,
+	}
+}
+
+func (s *ShellCommand) addArg(arg string) {
+	s.Args = append(s.Args, arg)
+}
+
+func FindExecutablePath(cmd string) string {
+	path, err := exec.LookPath(cmd)
 	if err != nil {
 		return ""
 	}
@@ -94,41 +111,45 @@ func isPrintableChar(c rune) bool {
 	return c == '\\' || c == '\n' || c == '$' || c == '"'
 }
 
-func ParseArgs(args []string) ([]string, ShellConfig) {
-	stdOutFile := os.Stdout
-	stdErrFile := os.Stderr
-	newArgs := []string{}
+func ParseInput(input []string) ([]ShellCommand) {
+	cmds := []ShellCommand{}
+	currentCmd := NewShellCommand()
 	i := 0
-	for i < len(args) {
-		arg := args[i]
-
-		switch arg {
-		case ">", "1>":
-			if i < len(args) - 1 {
-				stdOutFile = getOSFile(args[i+1], true)
-			}
-			i += 2
-		case ">>", "1>>":
-			if i < len(args) - 1 {
-				stdOutFile = getOSFile(args[i+1], false)
-			}
-			i += 2
-		case "2>":
-			if i < len(args) - 1 {
-				stdErrFile = getOSFile(args[i+1], true)
-			}
-			i += 2
-		case "2>>":
-			if i < len(args) - 1 {
-				stdErrFile = getOSFile(args[i+1], false)
-			}
-			i += 2
-		default:
-			newArgs = append(newArgs, arg)
+	for i < len(input) {
+		if currentCmd.Command == "" {
+			currentCmd.Command = input[i]
 			i += 1
+		} else {
+			arg := input[i]
+			switch arg {
+			case ">", "1>":
+				if i < len(input) - 1 {
+					currentCmd.StdOutFile = getOSFile(input[i+1], true)
+				}
+				i += 2
+			case ">>", "1>>":
+				if i < len(input) - 1 {
+					currentCmd.StdOutFile = getOSFile(input[i+1], false)
+				}
+				i += 2
+			case "2>":
+				if i < len(input) - 1 {
+					currentCmd.StdErrFile = getOSFile(input[i+1], true)
+				}
+				i += 2
+			case "2>>":
+				if i < len(input) - 1 {
+					currentCmd.StdErrFile = getOSFile(input[i+1], false)
+				}
+				i += 2
+			default:
+				currentCmd.addArg(arg)
+				i += 1
+			}
 		}
 	}
-	return newArgs, ShellConfig{StdOutFile: stdOutFile, StdErrFile: stdErrFile}
+	cmds = append(cmds, currentCmd)
+	return cmds
 }
 
 func getOSFile(filename string, overwrite bool) *os.File {
