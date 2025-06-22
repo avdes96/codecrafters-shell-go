@@ -13,7 +13,7 @@ import (
 
 type Cd struct{}
 
-func (c Cd) Run(cmd utils.ShellCommand) {
+func (c Cd) Run(cmd *utils.ShellCommand) {
 	if len(cmd.Args) != 1 {
 		fmt.Println("Usage: cd <dir>")
 		return

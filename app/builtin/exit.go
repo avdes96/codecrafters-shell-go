@@ -10,7 +10,7 @@ import (
 
 type Exit struct{}
 
-func (e Exit) Run(cmd utils.ShellCommand) {
+func (e Exit) Run(cmd *utils.ShellCommand) {
 	var exitCode int
 	if len(cmd.Args) == 0 {
 		exitCode = 0

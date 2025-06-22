@@ -7,6 +7,7 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/codecrafters-io/shell-starter-go/app/builtin"
 	"github.com/codecrafters-io/shell-starter-go/app/executable"
@@ -66,7 +67,7 @@ func isExec(obj os.DirEntry) bool {
 }
 
 
-func (s shell) Run() {
+func (s *shell) Run() {
 	var invoker string
 	var userInput string = ""
 	isNewLine := true
@@ -120,23 +121,26 @@ func (s shell) Run() {
 }
 
 
-func (s shell) executeCommand(userInput string) {
+func (s *shell) executeCommand(userInput string) {
 	fmt.Fprint(os.Stdout, "\n")
 	userInputSplit := utils.ParseString(userInput)
 	cmds := utils.ParseInput(userInputSplit)
+	var wg sync.WaitGroup
 	for _, cmd := range cmds {
 		if b, ok := s.builtins[cmd.Command]; ok {
-			b.Run(cmd)
+			b.Run(&cmd)
 		} else if path := utils.FindExecutablePath(cmd.Command); path != "" {
-			executable.Run(cmd)
+			wg.Add(1)
+			go executable.Run(&cmd, &wg)
 		} else {
 			fmt.Fprintf(cmd.StdErrFile, "%s: command not found\n", cmd.Command)
 		}
 	}
+	wg.Wait()
 }
 
 
-func (s shell) getPossibleAutocompletions(userInput string) []string {
+func (s *shell) getPossibleAutocompletions(userInput string) []string {
 	completions := []string{}
 	for builtin := range s.builtins {
 		if strings.HasPrefix(builtin, userInput) {

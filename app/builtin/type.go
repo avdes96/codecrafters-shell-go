@@ -11,18 +11,18 @@ type Type struct {
 	Builtins *map[string]Builtin
 }
 
-func (t Type) Run(cmd utils.ShellCommand) {
+func (t Type) Run(cmd *utils.ShellCommand) {
 	if len(cmd.Args) == 0 {
 		fmt.Println("Usage: type <cmd>")
 		return
 	}
 	command := cmd.Args[0]
 	if t.isBuiltin(command) {
-		fmt.Println(command + " is a shell builtin")
+		fmt.Fprintf(cmd.StdOutFile, "%s is a shell builtin\n", command)
 	} else if ok, path := t.isExecutable(command); ok {
-		fmt.Println(command + " is " + path)
+		fmt.Fprintf(cmd.StdOutFile, "%s is %s\n", command, path)
 	} else {
-		fmt.Println(command + ": not found")
+		fmt.Fprintf(cmd.StdOutFile, "%s: not found\n", command)
 	}
 }
 

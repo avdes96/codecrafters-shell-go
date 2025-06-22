@@ -29,6 +29,18 @@ func (s *ShellCommand) addArg(arg string) {
 	s.Args = append(s.Args, arg)
 }
 
+func (s *ShellCommand) Close() {
+	if s.StdOutFile != os.Stdout {
+		s.StdOutFile.Close()
+	}
+	if s.StdErrFile != os.Stderr {
+		s.StdErrFile.Close()
+	}
+	if s.StdInFile != os.Stdin {
+		s.StdInFile.Close()
+	}
+}
+
 func FindExecutablePath(cmd string) string {
 	path, err := exec.LookPath(cmd)
 	if err != nil {
@@ -142,6 +154,16 @@ func ParseInput(input []string) ([]ShellCommand) {
 					currentCmd.StdErrFile = getOSFile(input[i+1], false)
 				}
 				i += 2
+			case "|":
+				r, w, err := os.Pipe()
+				if err != nil {
+					log.Fatalf("Error creating pipe: %s", err)
+				}
+				currentCmd.StdOutFile = w
+				cmds = append(cmds, currentCmd)
+				currentCmd = NewShellCommand()
+				currentCmd.StdInFile = r
+				i += 1
 			default:
 				currentCmd.addArg(arg)
 				i += 1
