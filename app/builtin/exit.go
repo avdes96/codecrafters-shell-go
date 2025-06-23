@@ -4,16 +4,13 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"sync"
 
 	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
 
 type Exit struct{}
 
-func (e Exit) Run(cmd *utils.ShellCommand, wg *sync.WaitGroup) {
-	defer cmd.Close()
-	defer wg.Done()
+func (e Exit) Run(cmd *utils.ShellCommand) {
 	var exitCode int
 	if len(cmd.Args) == 0 {
 		exitCode = 0

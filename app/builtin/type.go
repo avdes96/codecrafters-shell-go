@@ -2,7 +2,6 @@ package builtin
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
@@ -12,9 +11,7 @@ type Type struct {
 	Builtins *map[string]Builtin
 }
 
-func (t Type) Run(cmd *utils.ShellCommand, wg *sync.WaitGroup) {
-	defer cmd.Close()
-	defer wg.Done()
+func (t Type) Run(cmd *utils.ShellCommand) {
 	if len(cmd.Args) == 0 {
 		fmt.Println("Usage: type <cmd>")
 		return

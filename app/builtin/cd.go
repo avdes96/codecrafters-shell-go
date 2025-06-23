@@ -7,16 +7,13 @@ import (
 	"log"
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
 
 type Cd struct{}
 
-func (c Cd) Run(cmd *utils.ShellCommand, wg *sync.WaitGroup) {
-	defer cmd.Close()
-	defer wg.Done()
+func (c Cd) Run(cmd *utils.ShellCommand) {
 	if len(cmd.Args) != 1 {
 		fmt.Println("Usage: cd <dir>")
 		return
