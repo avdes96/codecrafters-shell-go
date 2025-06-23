@@ -19,24 +19,27 @@ type shell struct {
 	builtins map[string]builtin.Builtin
 	executables []string
 	completionsCache []string
+	history []string
 }
 
-func New() shell {
-	return shell{
+func New() *shell {
+	s:= shell{
 		builtins: getBuiltins(),
 		executables: getExecutables(),
 		completionsCache: []string{},
+		history: []string{},
 	}
+	s.builtins["history"] = builtin.NewHistory(&s.history)
+	return &s
 }
 
 func getBuiltins() map[string]builtin.Builtin {
 	builtins := map[string]builtin.Builtin{}
-	builtins["exit"] = builtin.Exit{}
-	builtins["echo"] = builtin.Echo{}
-	builtins["type"] = builtin.Type{Builtins: &builtins}
-	builtins["pwd"] = builtin.Pwd{}
-	builtins["cd"] = builtin.Cd{}
-	builtins["history"] = builtin.History{}
+	builtins["exit"] = builtin.NewExit()
+	builtins["echo"] = builtin.NewEcho()
+	builtins["type"] = builtin.NewType(&builtins)
+	builtins["pwd"] = builtin.NewPwd()
+	builtins["cd"] = builtin.NewCd()
 	return builtins
 }
 
@@ -85,6 +88,7 @@ func (s *shell) Run() {
 		}
 		switch invoker {
 		case "\n":
+			s.history = append(s.history, userInput)
 			s.executeCommand(userInput)
 			isNewLine, userInput = true, ""
 			s.completionsCache = []string{}
