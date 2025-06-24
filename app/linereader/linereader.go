@@ -32,18 +32,34 @@ func (l linereader) ReadLine(initialState string) (string, string, error) {
 		if err != nil {
 			return "", "", err
 		}
-		switch s := string(b); s {
-		case "\n":
-			return s, userInput, nil
-		case "\t":
+		switch b {
+		case '\n':
+			return string(b), userInput, nil
+		case '\t':
 			if onlyTab {
 				return "\t\t", userInput, nil
 			}
-			return s, userInput, nil
+			return string(b), userInput, nil
+		case '\x1b':
+			b, err = l.reader.ReadByte()
+			if err != nil {
+				return "", "", err
+			}
+			switch b {
+				case '[':
+					b, err = l.reader.ReadByte()
+					if err != nil {
+						return "", "", err
+					}
+					switch b {
+					case 'A':
+						return "arrowUp", "", nil
+					}
+			}
 		default:
 			onlyTab = false
-			userInput += s
-			fmt.Fprint(os.Stdout, s)
+			userInput += string(b)
+			fmt.Fprint(os.Stdout, string(b))
 		}
 
 	}

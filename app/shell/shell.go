@@ -20,6 +20,7 @@ type shell struct {
 	executables []string
 	completionsCache []string
 	history []string
+	historyPtr int
 }
 
 func New() *shell {
@@ -28,6 +29,7 @@ func New() *shell {
 		executables: getExecutables(),
 		completionsCache: []string{},
 		history: []string{},
+		historyPtr: -1,
 	}
 	s.builtins["history"] = builtin.NewHistory(&s.history)
 	return &s
@@ -91,11 +93,11 @@ func (s *shell) Run() {
 			s.history = append(s.history, userInput)
 			s.executeCommand(userInput)
 			isNewLine, userInput = true, ""
-			s.completionsCache = []string{}
+			s.reset()
 		case "\t\t":
 			if len(s.completionsCache) > 0 {
 				fmt.Fprintf(os.Stdout, "\r\n%s\r\n$ %s", strings.Join(s.completionsCache, "  "), userInput)
-				s.completionsCache = []string{}
+				s.reset()
 			}
 		case "\t":
 			completions := s.getPossibleAutocompletions(userInput)
@@ -121,10 +123,27 @@ func (s *shell) Run() {
 					s.completionsCache = completions
 				}
 			}
+		case "arrowUp":
+			s.clearLine()
+			if s.historyPtr >= 0 {
+				userInput = s.history[s.historyPtr]
+				s.historyPtr -= 1
+				fmt.Fprint(os.Stdout, userInput)
+			}
 		}
 	}
 }
 
+
+func (s *shell) reset() {
+	s.completionsCache = []string{}
+	s.historyPtr = len(s.history)-1
+}
+
+func (s* shell) clearLine() {
+	fmt.Fprint(os.Stdout, "\n\033[1A\033[K") //source: https://groups.google.com/g/golang-nuts/c/k6l_LhI8CO0/m/Nu-bWHb8BwAJ
+	fmt.Fprint(os.Stdout, "$ ")
+}
 
 func (s *shell) executeCommand(userInput string) {
 	fmt.Fprint(os.Stdout, "\n")
