@@ -124,11 +124,25 @@ func (s *shell) Run() {
 				}
 			}
 		case "arrowUp":
+			if len(s.history) == 0 {
+				continue
+			}
 			s.clearLine()
-			if s.historyPtr >= 0 {
-				userInput = s.history[s.historyPtr]
+			if 0 < s.historyPtr && s.historyPtr <= len(s.history) {
 				s.historyPtr -= 1
+				userInput = s.history[s.historyPtr]
 				fmt.Fprint(os.Stdout, userInput)
+			}
+		case "arrowDown":
+			if len(s.history) == 0 {
+				continue
+			}
+			s.clearLine()
+			if 0 <=s.historyPtr && s.historyPtr < len(s.history) {
+				s.historyPtr += 1
+				userInput = s.history[s.historyPtr]
+				fmt.Fprint(os.Stdout, userInput)
+
 			}
 		}
 	}
@@ -137,7 +151,7 @@ func (s *shell) Run() {
 
 func (s *shell) reset() {
 	s.completionsCache = []string{}
-	s.historyPtr = len(s.history)-1
+	s.historyPtr = len(s.history)
 }
 
 func (s* shell) clearLine() {

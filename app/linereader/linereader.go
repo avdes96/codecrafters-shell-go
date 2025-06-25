@@ -54,6 +54,8 @@ func (l linereader) ReadLine(initialState string) (string, string, error) {
 					switch b {
 					case 'A':
 						return "arrowUp", "", nil
+					case 'B':
+						return "arrowDown", "", nil
 					}
 			}
 		default:
