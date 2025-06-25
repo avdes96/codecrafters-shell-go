@@ -2,37 +2,56 @@ package builtin
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
 
 type History struct{HistoryList *[]string}
 
+const usageStr = "Usage: history [limit] | [-r <path>]"
+
 func (h *History) Run(cmd *utils.ShellCommand) {
-	if len(cmd.Args) > 1 {
-		fmt.Fprint(cmd.StdOutFile, "Usage: history <n>\n")
-		return
-	}
-	if len(cmd.Args) == 0 {
+	switch len(cmd.Args) {
+	case 0:
 		n := len(*h.HistoryList)
 		h.printHistory(cmd.StdOutFile, n)
 		return
-	}
-
-	nStr := cmd.Args[0]
-	n, err := strconv.Atoi(nStr)
-	if err != nil {
-		fmt.Fprintf(cmd.StdOutFile, "history: %s: numeric argument required\n", nStr)
+	case 1:
+		nStr := cmd.Args[0]
+		n, err := strconv.Atoi(nStr)
+		if err != nil {
+			fmt.Fprintf(cmd.StdOutFile, "history: %s: numeric argument required\n", nStr)
+			return
+		}
+		if n < 0 {
+			fmt.Fprintf(cmd.StdOutFile, "history: %d: numeric argument must be non-negative\n", n)
+			return
+		}
+		h.printHistory(cmd.StdOutFile, n)
+		return
+	case 2:
+		switch cmd.Args[0] {
+		case "-r":
+			file, err := readFromFile(cmd.Args[1])
+			if err != nil {
+				log.Printf("Error reading file: %s", err)
+				return
+			}
+			cmds := strings.Split(file, "\n")
+			*h.HistoryList = append(*h.HistoryList, cmds...)
+		default:
+			fmt.Fprint(cmd.StdOutFile, usageStr)
+			return
+		}
+	default:
+		fmt.Fprint(cmd.StdOutFile, usageStr)
 		return
 	}
-	if n < 0 {
-		fmt.Fprintf(cmd.StdOutFile, "history: %d: numeric argument must be non-negative\n", n)
-		return
-	}
-	h.printHistory(cmd.StdOutFile, n)
-	return
 }
 
 func NewHistory(h *[]string) *History {
@@ -44,4 +63,24 @@ func (h *History) printHistory(out *os.File, n int) {
 	for i, prevCommand := range (*h.HistoryList)[start:] {
 		fmt.Fprintf(out, "\t%d %s\n", i+1, prevCommand)
 	}
+}
+
+func readFromFile(filename string) (string, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return "", fmt.Errorf("Unable to open file: %s", err)
+	}
+	buffer := make([]byte, 1024)
+	s := ""
+	for {
+		n, err := file.Read(buffer)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return "", fmt.Errorf("Unable to read file: %s", err)
+		}
+		s += strings.TrimSpace(string(buffer[:n]))
+	}
+	return s, nil
 }
