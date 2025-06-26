@@ -136,22 +136,22 @@ func ParseInput(input []string) ([]ShellCommand) {
 			switch arg {
 			case ">", "1>":
 				if i < len(input) - 1 {
-					currentCmd.StdOutFile = getOSFile(input[i+1], true)
+					currentCmd.StdOutFile = GetOSFile(input[i+1], true)
 				}
 				i += 2
 			case ">>", "1>>":
 				if i < len(input) - 1 {
-					currentCmd.StdOutFile = getOSFile(input[i+1], false)
+					currentCmd.StdOutFile = GetOSFile(input[i+1], false)
 				}
 				i += 2
 			case "2>":
 				if i < len(input) - 1 {
-					currentCmd.StdErrFile = getOSFile(input[i+1], true)
+					currentCmd.StdErrFile = GetOSFile(input[i+1], true)
 				}
 				i += 2
 			case "2>>":
 				if i < len(input) - 1 {
-					currentCmd.StdErrFile = getOSFile(input[i+1], false)
+					currentCmd.StdErrFile = GetOSFile(input[i+1], false)
 				}
 				i += 2
 			case "|":
@@ -174,7 +174,7 @@ func ParseInput(input []string) ([]ShellCommand) {
 	return cmds
 }
 
-func getOSFile(filename string, overwrite bool) *os.File {
+func GetOSFile(filename string, overwrite bool) *os.File {
 	var flags int = os.O_CREATE | os.O_WRONLY
 	if !overwrite {
 		flags |= os.O_APPEND

@@ -39,11 +39,16 @@ func (h *History) Run(cmd *utils.ShellCommand) {
 		case "-r":
 			file, err := readFromFile(cmd.Args[1])
 			if err != nil {
-				log.Printf("Error reading file: %s", err)
+				log.Printf("Error reading from file %s: %s", cmd.Args[1], err)
 				return
 			}
 			cmds := strings.Split(file, "\n")
 			*h.HistoryList = append(*h.HistoryList, cmds...)
+		case "-w":
+			err := h.writeToFile(cmd.Args[1], true)
+			if err != nil {
+				log.Printf("Error writing to file %s: %s", cmd.Args[1], err)
+			}
 		default:
 			fmt.Fprint(cmd.StdOutFile, usageStr)
 			return
@@ -83,4 +88,15 @@ func readFromFile(filename string) (string, error) {
 		s += strings.TrimSpace(string(buffer[:n]))
 	}
 	return s, nil
+}
+
+func (h History) writeToFile(filename string, overwrite bool) error {
+	file := utils.GetOSFile(filename, overwrite)
+	for _, cmd := range *h.HistoryList {
+		_, err := file.WriteString(cmd + "\n")
+		if err != nil {
+			return fmt.Errorf("Unable to write to file")
+		}
+	}
+	return nil
 }
