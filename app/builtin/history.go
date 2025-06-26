@@ -11,7 +11,10 @@ import (
 	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
 
-type History struct{HistoryList *[]string}
+type History struct{
+	HistoryList *[]string
+	lastAppended int
+}
 
 const usageStr = "Usage: history [limit] | [-r <path>]"
 
@@ -45,9 +48,14 @@ func (h *History) Run(cmd *utils.ShellCommand) {
 			cmds := strings.Split(file, "\n")
 			*h.HistoryList = append(*h.HistoryList, cmds...)
 		case "-w":
-			err := h.writeToFile(cmd.Args[1], true)
+			err := h.writeToFile(cmd.Args[1])
 			if err != nil {
 				log.Printf("Error writing to file %s: %s", cmd.Args[1], err)
+			}
+		case "-a":
+			err := h.appendToFile(cmd.Args[1])
+			if err != nil {
+				log.Printf("Error appending to file %s: %s", cmd.Args[1], err)
 			}
 		default:
 			fmt.Fprint(cmd.StdOutFile, usageStr)
@@ -60,7 +68,10 @@ func (h *History) Run(cmd *utils.ShellCommand) {
 }
 
 func NewHistory(h *[]string) *History {
-	return &History{HistoryList: h}
+	return &History{
+		HistoryList: h,
+		lastAppended: 0,
+	}
 }
 
 func (h *History) printHistory(out *os.File, n int) {
@@ -90,13 +101,26 @@ func readFromFile(filename string) (string, error) {
 	return s, nil
 }
 
-func (h History) writeToFile(filename string, overwrite bool) error {
-	file := utils.GetOSFile(filename, overwrite)
+func (h *History) writeToFile(filename string) error {
+	file := utils.GetOSFile(filename, true)
 	for _, cmd := range *h.HistoryList {
 		_, err := file.WriteString(cmd + "\n")
 		if err != nil {
 			return fmt.Errorf("Unable to write to file")
 		}
 	}
+	return nil
+}
+
+func (h *History) appendToFile(filename string) error {
+	file := utils.GetOSFile(filename, false)
+	for i, cmd := range (*h.HistoryList)[h.lastAppended:] {
+		_, err := file.WriteString(cmd + "\n")
+		if err != nil {
+			h.lastAppended = h.lastAppended + i
+			return fmt.Errorf("Unable to append to file")
+		}
+	}
+	h.lastAppended = len(*h.HistoryList)
 	return nil
 }
