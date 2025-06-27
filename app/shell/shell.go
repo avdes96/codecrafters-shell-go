@@ -32,6 +32,9 @@ func New() *shell {
 		historyPtr: -1,
 	}
 	s.builtins["history"] = builtin.NewHistory(&s.history)
+	if h, ok := s.builtins["history"].(*builtin.History); ok {
+		h.ReadFromFile(os.Getenv("HISTFILE"))
+	}
 	return &s
 }
 

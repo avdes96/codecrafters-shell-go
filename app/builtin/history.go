@@ -40,13 +40,11 @@ func (h *History) Run(cmd *utils.ShellCommand) {
 	case 2:
 		switch cmd.Args[0] {
 		case "-r":
-			file, err := readFromFile(cmd.Args[1])
+			err := h.ReadFromFile(cmd.Args[1])
 			if err != nil {
 				log.Printf("Error reading from file %s: %s", cmd.Args[1], err)
 				return
 			}
-			cmds := strings.Split(file, "\n")
-			*h.HistoryList = append(*h.HistoryList, cmds...)
 		case "-w":
 			err := h.writeToFile(cmd.Args[1])
 			if err != nil {
@@ -81,10 +79,10 @@ func (h *History) printHistory(out *os.File, n int) {
 	}
 }
 
-func readFromFile(filename string) (string, error) {
+func (h *History) ReadFromFile(filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
-		return "", fmt.Errorf("Unable to open file: %s", err)
+		return fmt.Errorf("Unable to open file: %s", err)
 	}
 	buffer := make([]byte, 1024)
 	s := ""
@@ -94,11 +92,19 @@ func readFromFile(filename string) (string, error) {
 			break
 		}
 		if err != nil {
-			return "", fmt.Errorf("Unable to read file: %s", err)
+			return fmt.Errorf("Unable to read file: %s", err)
 		}
 		s += strings.TrimSpace(string(buffer[:n]))
 	}
-	return s, nil
+	cmds := strings.Split(s, "\n")
+	cmdsFiltered := []string{}
+	for _, cmd := range cmds {
+		if c := strings.TrimSpace(cmd); c != "" {
+			cmdsFiltered = append(cmdsFiltered, c)
+		}
+	}
+	*h.HistoryList = append(*h.HistoryList, cmdsFiltered...)
+	return nil
 }
 
 func (h *History) writeToFile(filename string) error {
