@@ -5,5 +5,5 @@ import (
 )
 
 type Builtin interface {
-	Run(cmd *utils.ShellCommand)
+	Run(cmd *utils.ShellCommand) int
 }

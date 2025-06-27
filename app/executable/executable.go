@@ -7,7 +7,7 @@ import (
 	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
 
-func Run(s *utils.ShellCommand) {
+func Run(s *utils.ShellCommand) int {
 	cmd := exec.Command(s.Command, s.Args...)
 	cmd.Stdin = s.StdInFile
 	cmd.Stdout = s.StdOutFile
@@ -16,5 +16,6 @@ func Run(s *utils.ShellCommand) {
 		log.Printf("Error running command %s with args %s: %v", s.Command, s.Args, err)
 	}
 	cmd.Wait()
+	return -1
 }
 

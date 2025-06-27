@@ -2,7 +2,6 @@ package builtin
 
 import (
 	"log"
-	"os"
 	"strconv"
 
 	"github.com/codecrafters-io/shell-starter-go/app/utils"
@@ -14,7 +13,7 @@ func NewExit() *Exit {
 	return &Exit{}
 }
 
-func (e *Exit) Run(cmd *utils.ShellCommand) {
+func (e *Exit) Run(cmd *utils.ShellCommand) int {
 	var exitCode int
 	if len(cmd.Args) == 0 {
 		exitCode = 0
@@ -25,5 +24,5 @@ func (e *Exit) Run(cmd *utils.ShellCommand) {
 		}
 		exitCode = exitCodeInt
 	}
-	os.Exit(exitCode)
+	return exitCode
 }

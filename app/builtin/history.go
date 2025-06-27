@@ -18,51 +18,54 @@ type History struct{
 
 const usageStr = "Usage: history [limit] | [-r <path>]"
 
-func (h *History) Run(cmd *utils.ShellCommand) {
+func (h *History) Run(cmd *utils.ShellCommand) int {
 	switch len(cmd.Args) {
 	case 0:
 		n := len(*h.HistoryList)
 		h.printHistory(cmd.StdOutFile, n)
-		return
+		return -1
 	case 1:
 		nStr := cmd.Args[0]
 		n, err := strconv.Atoi(nStr)
 		if err != nil {
 			fmt.Fprintf(cmd.StdOutFile, "history: %s: numeric argument required\n", nStr)
-			return
+			return -1
 		}
 		if n < 0 {
 			fmt.Fprintf(cmd.StdOutFile, "history: %d: numeric argument must be non-negative\n", n)
-			return
+			return -1
 		}
 		h.printHistory(cmd.StdOutFile, n)
-		return
+		return -1
 	case 2:
 		switch cmd.Args[0] {
 		case "-r":
 			err := h.ReadFromFile(cmd.Args[1])
 			if err != nil {
 				log.Printf("Error reading from file %s: %s", cmd.Args[1], err)
-				return
+				return -1
 			}
 		case "-w":
 			err := h.writeToFile(cmd.Args[1])
 			if err != nil {
 				log.Printf("Error writing to file %s: %s", cmd.Args[1], err)
+				return -1
 			}
 		case "-a":
 			err := h.appendToFile(cmd.Args[1])
 			if err != nil {
 				log.Printf("Error appending to file %s: %s", cmd.Args[1], err)
+				return -1
 			}
 		default:
 			fmt.Fprint(cmd.StdOutFile, usageStr)
-			return
+			return -1
 		}
 	default:
 		fmt.Fprint(cmd.StdOutFile, usageStr)
-		return
+		return -1
 	}
+	return -1
 }
 
 func NewHistory(h *[]string) *History {

@@ -173,9 +173,12 @@ func (s *shell) executeCommand(userInput string) {
 			defer cmd.Close()
 			defer wg.Done()
 			if b, ok := s.builtins[cmd.Command]; ok {
-				b.Run(&cmd)
+				exitCode := b.Run(&cmd)
+				s.dealWithExitCode(exitCode)
+
 			} else if path := utils.FindExecutablePath(cmd.Command); path != "" {
-				executable.Run(&cmd)
+				exitCode := executable.Run(&cmd)
+				s.dealWithExitCode(exitCode)
 			} else {
 				fmt.Fprintf(cmd.StdErrFile, "%s: command not found\n", cmd.Command)
 			}
@@ -184,6 +187,12 @@ func (s *shell) executeCommand(userInput string) {
 	wg.Wait()
 }
 
+func (s *shell) dealWithExitCode(e int) {
+	if e < 0 {
+		return
+	}
+	os.Exit(e)
+}
 
 func (s *shell) getPossibleAutocompletions(userInput string) []string {
 	completions := []string{}

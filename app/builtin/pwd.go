@@ -14,10 +14,12 @@ func NewPwd() *Pwd {
 	return &Pwd{}
 }
 
-func (p *Pwd) Run(cmd *utils.ShellCommand) {
+func (p *Pwd) Run(cmd *utils.ShellCommand) int {
 	wd, err := os.Getwd(); 
 	if err != nil {
-		log.Fatalf("Unable to get current working directory: %v", err)
+		log.Printf("Unable to get current working directory: %v", err)
+		return 1
 	}
 	fmt.Println(wd)
+	return -1
 }

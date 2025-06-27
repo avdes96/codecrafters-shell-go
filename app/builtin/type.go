@@ -15,10 +15,10 @@ func NewType(b *map[string]Builtin) *Type {
 	return &Type{Builtins: b}
 }
 
-func (t *Type) Run(cmd *utils.ShellCommand) {
+func (t *Type) Run(cmd *utils.ShellCommand) int {
 	if len(cmd.Args) == 0 {
 		fmt.Println("Usage: type <cmd>")
-		return
+		return -1
 	}
 	command := cmd.Args[0]
 	if t.isBuiltin(command) {
@@ -28,6 +28,7 @@ func (t *Type) Run(cmd *utils.ShellCommand) {
 	} else {
 		fmt.Fprintf(cmd.StdOutFile, "%s: not found\n", command)
 	}
+	return -1
 }
 
 func (t Type) isBuiltin(command string) bool {

@@ -13,6 +13,7 @@ func NewEcho() *Echo {
 	return &Echo{}
 }
 
-func (e *Echo) Run(cmd *utils.ShellCommand) {
+func (e *Echo) Run(cmd *utils.ShellCommand) int {
 	fmt.Fprintln(cmd.StdOutFile, strings.Join(cmd.Args, " "))
+	return -1
 }
