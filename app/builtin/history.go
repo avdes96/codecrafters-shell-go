@@ -40,7 +40,7 @@ func (h *History) Run(cmd *utils.ShellCommand) int {
 	case 2:
 		switch cmd.Args[0] {
 		case "-r":
-			err := h.ReadFromFile(cmd.Args[1])
+			err := h.ReadFromFile(cmd.Args[1], false)
 			if err != nil {
 				log.Printf("Error reading from file %s: %s", cmd.Args[1], err)
 				return -1
@@ -52,7 +52,7 @@ func (h *History) Run(cmd *utils.ShellCommand) int {
 				return -1
 			}
 		case "-a":
-			err := h.appendToFile(cmd.Args[1])
+			err := h.AppendToFile(cmd.Args[1])
 			if err != nil {
 				log.Printf("Error appending to file %s: %s", cmd.Args[1], err)
 				return -1
@@ -82,7 +82,7 @@ func (h *History) printHistory(out *os.File, n int) {
 	}
 }
 
-func (h *History) ReadFromFile(filename string) error {
+func (h *History) ReadFromFile(filename string, onStart bool) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return fmt.Errorf("Unable to open file: %s", err)
@@ -107,6 +107,9 @@ func (h *History) ReadFromFile(filename string) error {
 		}
 	}
 	*h.HistoryList = append(*h.HistoryList, cmdsFiltered...)
+	if onStart {
+		h.lastAppended = len(*h.HistoryList)
+	}
 	return nil
 }
 
@@ -121,7 +124,7 @@ func (h *History) writeToFile(filename string) error {
 	return nil
 }
 
-func (h *History) appendToFile(filename string) error {
+func (h *History) AppendToFile(filename string) error {
 	file := utils.GetOSFile(filename, false)
 	for i, cmd := range (*h.HistoryList)[h.lastAppended:] {
 		_, err := file.WriteString(cmd + "\n")

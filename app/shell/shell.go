@@ -15,6 +15,8 @@ import (
 	"github.com/codecrafters-io/shell-starter-go/app/utils"
 )
 
+const histfile string = "HISTFILE"
+
 type shell struct {
 	builtins map[string]builtin.Builtin
 	executables []string
@@ -33,7 +35,7 @@ func New() *shell {
 	}
 	s.builtins["history"] = builtin.NewHistory(&s.history)
 	if h, ok := s.builtins["history"].(*builtin.History); ok {
-		h.ReadFromFile(os.Getenv("HISTFILE"))
+		h.ReadFromFile(os.Getenv(histfile), true)
 	}
 	return &s
 }
@@ -190,6 +192,11 @@ func (s *shell) executeCommand(userInput string) {
 func (s *shell) dealWithExitCode(e int) {
 	if e < 0 {
 		return
+	}
+	if h, ok := s.builtins["history"].(*builtin.History); ok {
+		if f := os.Getenv(histfile); f != "" {
+			h.AppendToFile(f)
+		}
 	}
 	os.Exit(e)
 }
